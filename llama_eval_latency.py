@@ -1,0 +1,106 @@
+from transformers import AutoModelForCausalLM, LlamaTokenizer
+
+import torch
+
+import numpy as np
+import argparse
+from datetime import datetime
+
+def set_seed(seed):
+    np.random.seed(seed)
+    torch.random.manual_seed(seed)
+    
+def get_llm(model_name):
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name,
+        torch_dtype=torch.float16,
+        device_map='auto',
+        offload_folder='./offload'
+    )
+    
+    model.seqlen = model.config.max_position_embeddings
+    return model
+
+def get_tokenizer(model_name):
+    tokenizer = LlamaTokenizer.from_pretrained(
+        model_name,
+        use_fast=True
+    )
+    
+    return tokenizer
+
+def main():
+    # args parse var placeholder
+    # seed = 0
+    # model_name = 'baffo32/decapoda-research-llama-7B-hf'
+    # token_gen_size = 100
+    promt = 'There are various way to compress LLM model, this can be done by'    
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_name', type=str, required=True, help='Llama model used for inference')
+    parser.add_argument('--seed', type=int, required=True, help='Sets seed fot repeatability')
+    parser.add_argument('--token_size', type=int, required=True, help='Maximum generated tokens')
+    args = parser.parse_args()
+    
+    set_seed(args.seed)
+    device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
+    
+    if torch.cuda.is_available():
+        model = get_llm(args.model_name).to(device)
+    else:
+        model = get_llm(args.model_name)
+    model.eval()
+    
+    tokenizer = get_tokenizer(args.model_name)
+    
+    print(f'model used\t{args.model_name}')
+    print(f'device used\t{device}')    
+    
+    #TGT & TPOT    
+    tgt_time = datetime.now()
+    model_inputs = tokenizer(promt, return_tensors='pt')
+    
+    tpot_time = datetime.now()
+    generate_ids = model.generate(
+        **model_inputs,
+        max_new_tokens=args.token_size,
+        do_sample=True
+    )
+    tpot_end_time = datetime.now()
+    
+    #TTFT
+    ttft_time = datetime.now()
+    _ = model.generate(
+        **model_inputs,
+        max_new_tokens = 1
+    )
+    ttft_end_time = datetime.now()
+    
+    text = tokenizer.batch_decode(generate_ids, skip_special_tokens=True)[0]
+    tgt_end_time = datetime.now()
+    
+    inputs_token_len = model_inputs.input_ids.size(dim=1) 
+    gen_token_len = generate_ids.size(dim=1)
+    print(f'input token length\t{inputs_token_len}')
+    print(f'gen token length\t{gen_token_len}')
+    
+    # print(model_inputs)
+    # print(generate_ids)
+    
+    
+    print(f'\n{text}\n')
+    
+    tpot_delta  = round(((tpot_end_time - tpot_time).seconds * 1000) + ((tpot_end_time - tpot_time).microseconds / 1000))
+    ttft_delta  = round(((ttft_end_time - ttft_time).seconds * 1000) + ((ttft_end_time - ttft_time).microseconds / 1000))
+    tgt_delta   = round(((tgt_end_time - tgt_time).seconds * 1000) + ((tgt_end_time - tgt_time).microseconds / 1000))
+    
+    tpot = round(tpot_delta/(gen_token_len-inputs_token_len), 3)
+    
+    print(f'TGT\t-> {tgt_delta} ms')
+    print(f'aTPOT\t-> {tpot} ms/tok | {gen_token_len-inputs_token_len} tokens')
+    print(f'TTFT\t-> {ttft_delta} ms')
+    
+
+if __name__ == '__main__':
+    main()
+    

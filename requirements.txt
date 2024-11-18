@@ -1,0 +1,6 @@
+transformers
+accelerate
+datasets
+protobuf
+sentencepiece
+torch
