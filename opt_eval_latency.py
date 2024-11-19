@@ -1,4 +1,4 @@
-from transformers import AutoModelForCausalLM, LlamaTokenizer
+from transformers import AutoModelForCausalLM, GPT2Tokenizer
 
 import torch
 
@@ -22,7 +22,7 @@ def get_llm(model_name):
     return model
 
 def get_tokenizer(model_name):
-    tokenizer = LlamaTokenizer.from_pretrained(model_name, use_fast=True)
+    tokenizer = GPT2Tokenizer.from_pretrained(model_name)
     return tokenizer
 
 def generate_text(model, model_inputs, num_gen_token, do_sample):
@@ -39,7 +39,7 @@ def main():
     # seed = 0
     # model_name = 'baffo32/decapoda-research-llama-7B-hf'
     # token_gen_size = 100
-    promt = 'There are various way to compress LLM model, this can be done by'    
+    promt = "There are various way to compress LLM model, this can be done by reducing the number of parameters or by using the decompression scheme called 'Pulse' which is the equivalent of the first generation techniques, so its very important to minimize the number of parameters of LLM model. However, since LLM model can only compress LLM model's LLM model to the output, it is not possible"   
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_name', type=str, required=True, help='OPT model used for inference')
@@ -59,8 +59,8 @@ def main():
     print(f'device used\t{device}')   
      
     
-    print('\n-----TGT & TPOT-----')
     #TGT & TPOT    
+    print('\n-----TGT & TPOT-----')
     tgt_time = datetime.now()
     model_inputs = tokenizer(promt, return_tensors='pt')
     
@@ -75,10 +75,11 @@ def main():
     
     text = tokenizer.batch_decode(generate_ids, skip_special_tokens=True)[0]
     tgt_end_time = datetime.now()
+    print('Done')
     
     
-    print('\n-----TTFT-----')
     #TTFT
+    print('\n-----TTFT-----')
     ttft_time = datetime.now()
     _ = generate_text(
         model=model,
@@ -87,11 +88,10 @@ def main():
         do_sample=False
     )
     ttft_end_time = datetime.now()
+    print('Done')
     
     inputs_token_len = model_inputs.input_ids.size(dim=1) 
     gen_token_len = generate_ids.size(dim=1)
-    print(f'input token length\t{inputs_token_len}')
-    print(f'gen token length\t{gen_token_len}')
     
     # print(model_inputs)
     # print(generate_ids)
@@ -104,11 +104,17 @@ def main():
     tgt_delta   = round(((tgt_end_time - tgt_time).seconds * 1000) + ((tgt_end_time - tgt_time).microseconds / 1000))
     
     tpot = round(tpot_delta/(gen_token_len-inputs_token_len), 3)
-    tps = round((gen_token_len-inputs_token_len)/tpot_delta, 3)
+    tps = round((gen_token_len-inputs_token_len)/tpot_delta * 1000, 3) #in seconds
+    
+    print(f'Input token length\t{inputs_token_len}')
+    print(f'Totalngth\t{gen_token_len}')
+    print(f'Token Generated\t{gen_token_len-inputs_token_len} tokens')
+    
+    print()
     
     print(f'TGT\t-> {tgt_delta} ms')
-    print(f'aTPOT\t-> {tpot} ms/tok | {gen_token_len-inputs_token_len} tokens')
-    print(f'TpS\t-> {tps} tok/ms | {gen_token_len-inputs_token_len} tokens')
+    print(f'aTPOT\t-> {tpot} ms/tok')
+    print(f'TpS\t-> {tps} tok/s')
     print(f'TTFT\t-> {ttft_delta} ms')
     
 
