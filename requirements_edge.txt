@@ -1,0 +1,9 @@
+torch @ http://jetson.webredirect.org/jp6/cu126/+f/5cf/9ed17e35cb752/torch-2.5.0-cp310-cp310-linux_aarch64.whl#sha256=5cf9ed17e35cb7523812aeda9e7d6353c437048c5a6df1dc6617650333049092
+torchaudio @ http://jetson.webredirect.org/jp6/cu126/+f/812/4fbc4ba6df0a3/torchaudio-2.5.0-cp310-cp310-linux_aarch64.whl#sha256=8124fbc4ba6df0a30b1d8176aa5ce6f571c2dd5263e6401109d2e29708352c97
+torchvision @ http://jetson.webredirect.org/jp6/cu126/+f/5f9/67f920de3953f/torchvision-0.20.0-cp310-cp310-linux_aarch64.whl#sha256=5f967f920de3953f2a39d95154b1feffd5ccc06b4589e51540dc070021a9adb9
+numpy==1.26.1
+transformers
+accelerate
+datasets
+protobuf
+sentencepiece

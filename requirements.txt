@@ -1,8 +1,7 @@
+torch
+numpy
 transformers
 accelerate
 datasets
 protobuf
 sentencepiece
-
-torchvision == 0.20.0
-torchaudio == 2.5.0

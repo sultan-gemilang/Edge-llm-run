@@ -90,13 +90,11 @@ def main():
     
     inputs_token_len = model_inputs.input_ids.size(dim=1) 
     gen_token_len = generate_ids.size(dim=1)
-    print(f'input token length\t{inputs_token_len}')
-    print(f'gen token length\t{gen_token_len}')
     
     # print(model_inputs)
     # print(generate_ids)
     
-    print('\n-----Result----')
+    print('\n-----Text Output----')
     print(f'\n{text}\n')
     
     tpot_delta  = round(((tpot_end_time - tpot_time).seconds * 1000) + ((tpot_end_time - tpot_time).microseconds / 1000))
@@ -104,11 +102,18 @@ def main():
     tgt_delta   = round(((tgt_end_time - tgt_time).seconds * 1000) + ((tgt_end_time - tgt_time).microseconds / 1000))
     
     tpot = round(tpot_delta/(gen_token_len-inputs_token_len), 3)
-    tps = round((gen_token_len-inputs_token_len)/tpot_delta, 3)
+    tps = round((gen_token_len-inputs_token_len)/tpot_delta*1000, 3)
+    
+    print('\n-----Latency Result----')
+    print(f'Input token length\t{inputs_token_len}')
+    print(f'Totalngth\t{gen_token_len}')
+    print(f'Token Generated\t{gen_token_len-inputs_token_len} tokens')
+    
+    print()
     
     print(f'TGT\t-> {tgt_delta} ms')
     print(f'aTPOT\t-> {tpot} ms/tok | {gen_token_len-inputs_token_len} tokens')
-    print(f'TpS\t-> {tps} tok/ms | {gen_token_len-inputs_token_len} tokens')
+    print(f'TpS\t-> {tps} tok/s | {gen_token_len-inputs_token_len} tokens')
     print(f'TTFT\t-> {ttft_delta} ms')
     
 

@@ -14,25 +14,22 @@ First, make new venv to work with.
 python3 -m venv env
 ```
 
-### Install Pytorch
+### Install Dependencies
 Install pytorch for Jetson device, for more detailed steps, go to [NVIDA Docs Hub](https://docs.nvidia.com/deeplearning/frameworks/install-pytorch-jetson-platform/index.html)
 
-```bash
-export TORCH_INSTALL=https://developer.download.nvidia.com/compute/redist/jp/v61/pytorch/torch-2.5.0a0+872d972e41.nv24.08.17622132-cp310-cp310-linux_aarch64.whl
-```
+For this project, I'll be using pytorch build from [devpi(?)](http://jetson.webredirect.org/jp6/cu126).
+
+For Jetson device,
 
 ```bash
-python3 -m pip install --upgrade pip;
-python3 -m pip install numpy==’1.26.1’;
-python3 -m pip install --no-cache $TORCH_INSTALL
+pip install -r requirements_edge.txt
 ```
-
-### Install other dependencies
-The other dependencies for this roject can be install using requirements.txt
+or for PC for debugging
 
 ```bash
 pip install -r requirements.txt
 ```
+
 
 ## Code
 
@@ -49,7 +46,16 @@ python3 opt_eval_latency.py --model facebook/opt-350m --seed 0 --token_size 200
 * ``--seed`` Seed used forinference
 * ``--token_size`` The size of generated token used for inference
 
- For the text prompt used, you can change it by changing the ``prompt`` on the python files.
+```bash
+python3 llama_eval_latency.py --model baffo32/decapoda-research-llama-7B-hf --seed 0 --token_size 200
+```
+
+* ``--model`` Llama Model used for inference
+    * It is best to use sharded model if you want to run it on Edge
+* ``--seed`` Seed used forinference
+* ``--token_size`` The size of generated token used for inference
+
+For the text prompt used, you can change it by changing the ``prompt`` variable on the python files.
 
 
 ### Text Output
@@ -58,3 +64,10 @@ This code is just a test if the code it self can output a text.
 ```bash
 python3 text_output_opt.py
 ```
+
+or
+
+```bash
+python3 text_output_llama.py
+```
+Still WIP

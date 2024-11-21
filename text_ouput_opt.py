@@ -30,7 +30,7 @@ def get_tokenizer(model_name, use_fast):
 def generate_text(model, tokenizer, promt, max_new_tokens, do_sample, dev):
     print(f'promt: {promt}')
     
-    input_ids = tokenizer(promt, return_tensors='pt')
+    input_ids = tokenizer(promt, return_tensors='pt').to(dev)
     
     generate_ids = model.generate(
         **input_ids,
