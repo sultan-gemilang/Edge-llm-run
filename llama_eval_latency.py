@@ -62,7 +62,7 @@ def main():
     print('\n-----TGT & TPOT-----')
     #TGT & TPOT    
     tgt_time = datetime.now()
-    model_inputs = tokenizer(promt, return_tensors='pt')
+    model_inputs = tokenizer(promt, return_tensors='pt').to(device)
     
     tpot_time = datetime.now()
     generate_ids = generate_text(

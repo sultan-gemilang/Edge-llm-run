@@ -27,7 +27,7 @@ def get_tokenizer(model_name, use_fast):
     
     return tokenizer
 
-def generate_text(model, tokenizer, promt, max_new_tokens, do_sample):
+def generate_text(model, tokenizer, promt, max_new_tokens, do_sample, dev):
     print(f'promt: {promt}')
     
     input_ids = tokenizer(promt, return_tensors='pt')
@@ -79,7 +79,8 @@ def main():
         tokenizer=tokenizer,
         promt=promt,
         max_new_tokens=token_gen_size,
-        do_sample=True
+        do_sample=True,
+        dev=device
     )
     end_time = datetime.now()
     

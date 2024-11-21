@@ -3,4 +3,6 @@ accelerate
 datasets
 protobuf
 sentencepiece
-torch
+
+torchvision == 0.20.0
+torchaudio == 2.5.0
