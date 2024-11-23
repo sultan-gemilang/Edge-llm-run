@@ -126,6 +126,11 @@ def main():
     print(f'TpS\t-> {tps} tok/s | {gen_token_len-inputs_token_len} tokens')
     print(f'TTFT\t-> {ttft_delta} ms')
     
+    print()
+    
+    print(f'TGT start time\t {tgt_time}')
+    print(f'TPOT start time\t {tpot_time}')
+    print(f'TTFT star time\t {ttft_time}')
 
 if __name__ == '__main__':
     main()
