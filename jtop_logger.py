@@ -25,21 +25,22 @@ import os
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Simple jtop logger')
     # Standard file to store the logs
-    parser.add_argument('--file', action="store", dest="file", default="logger/log.csv")
+    parser.add_argument('--file', action="store", dest="file", default="log.csv")
     args = parser.parse_args()
     
-    
+    save_path = './logger/'
+    save_file = os.path.join(save_path, args.file)
 
     print("Simple jtop logger")
-    print("Saving log on {file}".format(file=args.file))
+    print("Saving log on {file}".format(save_file))
     
-    if not os.path.exists('./logger/'):
-        os.makedirs('./logger/', exist_ok=True)
+    if not os.path.exists(save_path):
+        os.makedirs(save_path, exist_ok=True)
 
     try:
         with jtop() as jetson:
             # Make csv file and setup csv
-            with open(args.file, 'w') as csvfile:
+            with open(save_file, 'w') as csvfile:
                 stats = jetson.stats
                 # Initialize cws writer
                 writer = csv.DictWriter(csvfile, fieldnames=stats.keys())
