@@ -51,7 +51,7 @@ def main():
     args = parser.parse_args()
     
     if args.log:
-        subprocess.Popen(['python3', './jtop_logger.py', '--file', f'{args.model_name}_log.csv'])
+        subprocess.Popen(['tegrastats', '--interval', '0.5', '--logfile', f'{args.model_name}_log.csv', '&'])
     else:
         pass
     
@@ -129,6 +129,11 @@ def main():
     print(f'TGT start time\t {tgt_time}')
     print(f'TPOT start time\t {tpot_time}')
     print(f'TTFT star time\t {ttft_time}')
+    
+    if args.log:
+        subprocess.Popen(['tegrastats', '--stop'])
+    else:
+        pass
 
 if __name__ == '__main__':
     main()
