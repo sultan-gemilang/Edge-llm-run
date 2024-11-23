@@ -19,7 +19,7 @@ Install pytorch for Jetson device, for more detailed steps, go to [NVIDA Docs Hu
 
 For this project, I'll be using pytorch build from [devpi(?)](http://jetson.webredirect.org/jp6/cu126).
 
-For Jetson device,
+Install dependencies on Jetson device,
 
 ```bash
 pip install -r requirements_edge.txt
@@ -30,6 +30,17 @@ or for PC for debugging
 pip install -r requirements.txt
 ```
 
+### Install Jetson-stats
+For performance logging I'll be using [Jetson-stats](https://github.com/rbonghi/jetson_stats/tree/master)
+
+Install it using ***Superuser***
+
+```bash
+sudo pip3 install -U jetson-stats
+```
+```bash
+python3 jtop_logger.py --file 
+```
 
 ## Code
 
