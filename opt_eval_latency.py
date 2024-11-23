@@ -51,7 +51,7 @@ def main():
     args = parser.parse_args()
     
     if args.log:
-        subprocess.Popen(['python3', './jtop_logger.py', f'{args.model_name}_log.csv'])
+        subprocess.Popen(['python3', './jtop_logger.py', '--file', f'{args.model_name}_log.csv'])
     else:
         pass
     
