@@ -4,6 +4,8 @@ import torch
 
 import numpy as np
 import argparse
+import subprocess
+
 from datetime import datetime
 
 def set_seed(seed):
@@ -45,7 +47,13 @@ def main():
     parser.add_argument('--model_name', type=str, required=True, help='OPT model used for inference')
     parser.add_argument('--seed', type=int, required=True, help='Sets seed fot repeatability')
     parser.add_argument('--token_size', type=int, required=True, help='Maximum generated tokens')
+    parser.add_argument('--log', type=bool, default=False, help='Log the Jetson performance on csv file')
     args = parser.parse_args()
+    
+    if args.log:
+        subprocess.Popen(['python3', './jtop_logger.py', f'{args.model_name}_log.csv'])
+    else:
+        pass
     
     print('\n-----Loading Model-----')
     set_seed(args.seed)

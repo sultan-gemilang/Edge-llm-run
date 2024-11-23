@@ -53,7 +53,7 @@ if __name__ == "__main__":
                     stats = jetson.stats
                     # Write row
                     writer.writerow(stats)
-                    print("Log at {time}".format(time=stats['time']))
+                    #print("Log at {time}".format(time=stats['time']))
     except JtopException as e:
         print(e)
     except KeyboardInterrupt:
