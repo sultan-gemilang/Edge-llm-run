@@ -38,9 +38,6 @@ Install it using ***Superuser***
 ```bash
 sudo pip3 install -U jetson-stats
 ```
-```bash
-python3 jtop_logger.py --file 
-```
 
 ## Code
 
@@ -50,21 +47,23 @@ There are currently 2 code, Latency testing and text output testing.
 For latency it can run by running below code
 
 ```bash
-python3 opt_eval_latency.py --model facebook/opt-350m --seed 0 --token_size 200
+python3 opt_eval_latency.py --model facebook/opt-350m --seed 0 --token_size 200 --log True
 ```
 
 * ``--model`` OPT Model used for inference
 * ``--seed`` Seed used forinference
 * ``--token_size`` The size of generated token used for inference
+* ``--log`` Log the hardware performance to csv, Default=False
 
 ```bash
-python3 llama_eval_latency.py --model baffo32/decapoda-research-llama-7B-hf --seed 0 --token_size 200
+python3 llama_eval_latency.py --model baffo32/decapoda-research-llama-7B-hf --seed 0 --token_size 200 --log True
 ```
 
 * ``--model`` Llama Model used for inference
     * It is best to use sharded model if you want to run it on Edge
 * ``--seed`` Seed used forinference
 * ``--token_size`` The size of generated token used for inference
+* ``--log`` Log the hardware performance to csv, Default=False
 
 For the text prompt used, you can change it by changing the ``prompt`` variable on the python files.
 
