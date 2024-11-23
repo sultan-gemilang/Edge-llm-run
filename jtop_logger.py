@@ -32,7 +32,7 @@ if __name__ == "__main__":
     save_file = os.path.join(save_path, args.file)
 
     print("Simple jtop logger")
-    print("Saving log on {file}".format(save_file))
+    print(f"Saving log on {save_file}")
     
     if not os.path.exists(save_path):
         os.makedirs(save_path, exist_ok=True)
