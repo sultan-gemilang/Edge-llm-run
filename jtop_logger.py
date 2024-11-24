@@ -26,6 +26,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Simple jtop logger')
     # Standard file to store the logs
     parser.add_argument('--file', action="store", dest="file", default="log.csv")
+    parser.add_argument('--interval', type=float, default=1)
     args = parser.parse_args()
     
     save_path = './logger/'
@@ -36,6 +37,8 @@ if __name__ == "__main__":
     
     if not os.path.exists(save_path):
         os.makedirs(save_path, exist_ok=True)
+    
+    jtop.jtop(interval=args.interval)
 
     try:
         with jtop() as jetson:
