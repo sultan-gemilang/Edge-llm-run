@@ -37,11 +37,9 @@ if __name__ == "__main__":
     
     if not os.path.exists(save_path):
         os.makedirs(save_path, exist_ok=True)
-    
-    jtop.jtop(interval=args.interval)
 
     try:
-        with jtop() as jetson:
+        with jtop(interval=args.interval) as jetson:
             # Make csv file and setup csv
             with open(save_file, 'w') as csvfile:
                 stats = jetson.stats
