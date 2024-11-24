@@ -5,6 +5,8 @@ import torch
 import numpy as np
 import argparse
 import subprocess
+import os
+import signal
 
 from datetime import datetime
 
@@ -44,26 +46,29 @@ def main():
     promt = 'There are various way to compress LLM model, this can be done by'    
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_name', type=str, required=True, help='OPT model used for inference')
-    parser.add_argument('--seed', type=int, required=True, help='Sets seed fot repeatability')
-    parser.add_argument('--token_size', type=int, required=True, help='Maximum generated tokens')
-    parser.add_argument('--log', type=bool, default=False, help='Log the Jetson performance on csv file')
+    parser.add_argument('--model', type=str, required=True, help='Llama model used for inference')
+    parser.add_argument('--seed', type=int, default=0,help='Sets seed fot repeatability')
+    parser.add_argument('--token_size', type=int, default=200, help='Maximum generated tokens')
+    parser.add_argument('--log', type=int, default=1,help='Log the Jetson performance on csv file')
+    parser.add_argument('--log_interval', type=float, default=0.5, help='Log Interval')
     args = parser.parse_args()
     
+    model_name = args.model.split('/')[1]
+    
     if args.log:
-        subprocess.Popen(['python3', './jtop_logger.py', '--file', f'{args.model_name}_log.csv'])
+        p = subprocess.Popen(['python3', './jtop_logger.py', '--file', f'{model_name}_log.csv', '--interval', f'{args.log_interval}'], preexec_fn=os.setsid)
     else:
         pass
     
     print('\n-----Loading Model-----')
     set_seed(args.seed)
     device = 'cuda:0' if torch.cuda.is_available() else 'cpu'
-    model = get_llm(args.model_name)
+    model = get_llm(args.model)
     model.eval()
     
-    tokenizer = get_tokenizer(args.model_name)
+    tokenizer = get_tokenizer(args.model)
     
-    print(f'model used\t{args.model_name}')
+    print(f'model used\t{args.model}')
     print(f'device used\t{device}')   
      
     
@@ -129,6 +134,11 @@ def main():
     print(f'TGT start time\t {tgt_time}')
     print(f'TPOT start time\t {tpot_time}')
     print(f'TTFT star time\t {ttft_time}')
+    
+    if args.log:
+        os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+    else:
+        print('No Log')
 
 if __name__ == '__main__':
     main()
