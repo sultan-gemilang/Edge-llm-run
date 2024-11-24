@@ -5,6 +5,7 @@ import torch
 import numpy as np
 import argparse
 import subprocess
+import os
 
 from datetime import datetime
 
@@ -47,11 +48,12 @@ def main():
     parser.add_argument('--model_name', type=str, required=True, help='OPT model used for inference')
     parser.add_argument('--seed', type=int, required=True, help='Sets seed fot repeatability')
     parser.add_argument('--token_size', type=int, required=True, help='Maximum generated tokens')
-    parser.add_argument('--log', type=bool, default=False, help='Log the Jetson performance on csv file')
+    parser.add_argument('--log', type=bool, help='Log the Jetson performance on csv file')
+    parser.add_argument('--log_interval', type=float, default=0.5, help='Log Interval')
     args = parser.parse_args()
     
     if args.log:
-        subprocess.Popen(['python3', './jtop_logger.py', '--file', f'{args.model_name}_log.csv'])
+        p = subprocess.Popen(['python3', './jtop_logger.py', '--file', f'{args.model_name}_log.csv', '--interval', f'{args.log_interval}'], preexec_fn=os.setsid)
     else:
         pass
     
@@ -131,6 +133,11 @@ def main():
     print(f'TGT start time\t {tgt_time}')
     print(f'TPOT start time\t {tpot_time}')
     print(f'TTFT star time\t {ttft_time}')
+    
+    if args.log:
+        os.killpg(os.getpgid(p.pid), )
+    else:
+        print('No Log')
 
 if __name__ == '__main__':
     main()
