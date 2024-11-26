@@ -4,5 +4,5 @@ env
 .env
 
 # Log
-./logger
-./log
+logger
+log
