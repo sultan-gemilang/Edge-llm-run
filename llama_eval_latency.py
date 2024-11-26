@@ -5,6 +5,7 @@ import torch
 import numpy as np
 import argparse
 import os
+import signal
 
 from datetime import datetime
 from time import sleep
@@ -52,7 +53,7 @@ def main():
     args = parser.parse_args()
     
     if args.log:
-        log_pid = input()
+        log_pid = input('Input logger PID: ')
     else:
         pass
     
@@ -133,7 +134,12 @@ def main():
     
     if args.log:
         sleep(5) # Buffer     
-        os.kill(log_pid)
+        
+        try:
+            os.kill(log_pid, signal.SIGTERM)
+            print(f'Send SIGTEM to PID {log_pid}')
+        except OSError:
+            print(f'Failed to send SIGTEM to PID {log_pid}')
     else:
         print('No Log')
 
