@@ -53,7 +53,7 @@ def main():
     args = parser.parse_args()
     
     if args.log:
-        log_pid = input('Input logger PID: ')
+        log_pid = int(input('Input logger PID: '))
     else:
         pass
     

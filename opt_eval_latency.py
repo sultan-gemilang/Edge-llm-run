@@ -56,7 +56,7 @@ def main():
     model_name = args.model.split('/')[1]
     
     if args.log:
-        log_pid = input('Input logger PID: ')
+        log_pid = int(input('Input logger PID: '))
     else:
         pass
     
