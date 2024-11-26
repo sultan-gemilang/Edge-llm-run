@@ -4,11 +4,10 @@ import torch
 
 import numpy as np
 import argparse
-import subprocess
 import os
-import signal
 
 from datetime import datetime
+from time import sleep
 
 def set_seed(seed):
     np.random.seed(seed)
@@ -50,13 +49,10 @@ def main():
     parser.add_argument('--seed', type=int, default=0,help='Sets seed fot repeatability')
     parser.add_argument('--token_size', type=int, default=200, help='Maximum generated tokens')
     parser.add_argument('--log', type=int, default=1,help='Log the Jetson performance on csv file')
-    parser.add_argument('--log_interval', type=float, default=0.5, help='Log Interval')
     args = parser.parse_args()
     
-    model_name = args.model.split('/')[1]
-    
     if args.log:
-        p = subprocess.Popen(['python3', './jtop_logger.py', '--file', f'{model_name}_log.csv', '--interval', f'{args.log_interval}'], preexec_fn=os.setsid)
+        log_pid = input()
     else:
         pass
     
@@ -136,7 +132,8 @@ def main():
     print(f'TTFT star time\t {ttft_time}')
     
     if args.log:
-        os.killpg(os.getpgid(p.pid), signal.SIGTERM)
+        sleep(5) # Buffer     
+        os.kill(log_pid)
     else:
         print('No Log')
 

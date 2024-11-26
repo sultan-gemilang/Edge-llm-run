@@ -34,6 +34,7 @@ if __name__ == "__main__":
 
     print("Simple jtop logger")
     print(f"Saving log on {save_file}")
+    print(f'Process PID {os.getpid()}')
     
     if not os.path.exists(save_path):
         os.makedirs(save_path, exist_ok=True)
