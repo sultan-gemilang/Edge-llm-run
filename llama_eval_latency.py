@@ -43,7 +43,7 @@ def main():
     # seed = 0
     # model_name = 'baffo32/decapoda-research-llama-7B-hf'
     # token_gen_size = 100
-    promt = 'There are various way to compress LLM model, this can be done by'    
+    promt = "There are various way to compress LLM model, this can be done by reducing the number of parameters or by using the decompression scheme called 'Pulse' which is the equivalent of the first generation techniques, so its very important to minimize the number of parameters of LLM model. However, since LLM model can only compress LLM model's LLM model to the output, it is not possible"      
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, required=True, help='Llama model used for inference')
