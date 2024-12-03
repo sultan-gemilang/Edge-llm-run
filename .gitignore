@@ -3,6 +3,9 @@ envs
 env
 .env
 
+#EDA
+EDA
+
 # Log
 logger
 log

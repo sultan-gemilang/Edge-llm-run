@@ -1,4 +1,4 @@
-from transformers import AutoModelForCausalLM, GPT2Tokenizer
+from transformers import AutoModelForCausalLM, LlamaTokenizer, GPT2Tokenizer
 
 import torch
 
@@ -15,18 +15,28 @@ def set_seed(seed):
     torch.random.manual_seed(seed)
     
 def get_llm(model_name):
-    model = AutoModelForCausalLM.from_pretrained(
-        model_name,
-        torch_dtype=torch.float16,
-        device_map='auto',
-        offload_folder='./offload'
-    )
-    
-    model.seqlen = model.config.max_position_embeddings
+    if 'llama' in model_name.lower():
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype=torch.float16,
+            device_map='auto',
+            offload_folder='./offload'
+        )
+    elif 'opt' in model_name.lower():
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            device_map='auto',
+            offload_folder='./offload'
+        )
+    else:
+        raise ValueError('Model is not supported!')
     return model
 
 def get_tokenizer(model_name):
-    tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+    if 'llama' in model_name.lower():
+        tokenizer = LlamaTokenizer.from_pretrained(model_name, use_fast=True)
+    elif 'opt' in model_name.lower():
+        tokenizer = GPT2Tokenizer.from_pretrained(model_name)
     return tokenizer
 
 def generate_text(model, model_inputs, num_gen_token, do_sample):
@@ -43,22 +53,21 @@ def main():
     # seed = 0
     # model_name = 'baffo32/decapoda-research-llama-7B-hf'
     # token_gen_size = 100
-    promt = "There are various way to compress LLM model, this can be done by reducing the number of parameters or by using the decompression scheme called 'Pulse' which is the equivalent of the first generation techniques, so its very important to minimize the number of parameters of LLM model. However, since LLM model can only compress LLM model's LLM model to the output, it is not possible"   
+    promt = "There are various way to compress LLM model, this can be done by reducing the number of parameters or by using the decompression scheme called 'Pulse' which is the equivalent of the first generation techniques, so its very important to minimize the number of parameters of LLM model. However, since LLM model can only compress LLM model's LLM model to the output, it is not possible"      
     
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, required=True, help='OPT model used for inference')
+    parser.add_argument('--model', type=str, required=True, help='Model used for inference')
     parser.add_argument('--seed', type=int, default=0,help='Sets seed fot repeatability')
     parser.add_argument('--token_size', type=int, default=200, help='Maximum generated tokens')
-    parser.add_argument('--log', type=int, default=1,help='Log the Jetson performance on csv file')
-    parser.add_argument('--log_interval', type=float, default=0.5, help='Log Interval')
+    parser.add_argument('--log', type=int, default=1,help='Log the performance on csv file')
     args = parser.parse_args()
-    
-    model_name = args.model.split('/')[1]
     
     if args.log:
         log_pid = int(input('Input logger PID: '))
     else:
         pass
+    
+    model_start = datetime.now()
     
     print('\n-----Loading Model-----')
     set_seed(args.seed)
@@ -66,14 +75,16 @@ def main():
     model = get_llm(args.model)
     model.eval()
     
+    model_end = datetime.now()
+    
     tokenizer = get_tokenizer(args.model)
     
     print(f'model used\t{args.model}')
     print(f'device used\t{device}')   
      
     
-    #TGT & TPOT    
     print('\n-----TGT & TPOT-----')
+    #TGT & TPOT    
     tgt_time = datetime.now()
     model_inputs = tokenizer(promt, return_tensors='pt').to(device)
     
@@ -88,11 +99,10 @@ def main():
     
     text = tokenizer.batch_decode(generate_ids, skip_special_tokens=True)[0]
     tgt_end_time = datetime.now()
-    print('Done')
     
     
-    #TTFT
     print('\n-----TTFT-----')
+    #TTFT
     ttft_time = datetime.now()
     _ = generate_text(
         model=model,
@@ -101,7 +111,6 @@ def main():
         do_sample=False
     )
     ttft_end_time = datetime.now()
-    print('Done')
     
     inputs_token_len = model_inputs.input_ids.size(dim=1) 
     gen_token_len = generate_ids.size(dim=1)
@@ -116,6 +125,8 @@ def main():
     ttft_delta  = round(((ttft_end_time - ttft_time).seconds * 1000) + ((ttft_end_time - ttft_time).microseconds / 1000))
     tgt_delta   = round(((tgt_end_time - tgt_time).seconds * 1000) + ((tgt_end_time - tgt_time).microseconds / 1000))
     
+    model_delta = round(((model_end - model_start).seconds * 1000) + ((model_end - model_start).microseconds / 1000))
+    
     tpot = round(tpot_delta/(gen_token_len-inputs_token_len), 3)
     tps = round((gen_token_len-inputs_token_len)/tpot_delta*1000, 3)
     
@@ -123,6 +134,7 @@ def main():
     print(f'Input token length\t{inputs_token_len}')
     print(f'Totalngth\t{gen_token_len}')
     print(f'Token Generated\t{gen_token_len-inputs_token_len} tokens')
+    print(f'Model load time\t{model_delta} ms')
     
     print()
     
@@ -133,12 +145,13 @@ def main():
     
     print()
     
+    print(f'Code start time\t {model_start}')
     print(f'TGT start time\t {tgt_time}')
     print(f'TPOT start time\t {tpot_time}')
     print(f'TTFT star time\t {ttft_time}')
     
     if args.log:
-        sleep(5) # Buffer     
+        sleep(30) # Buffer     
         
         try:
             os.kill(log_pid, signal.SIGTERM)
