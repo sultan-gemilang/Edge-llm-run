@@ -7,4 +7,4 @@ accelerate
 datasets
 protobuf
 sentencepiece
-matplolib
+matplotlib
