@@ -5,3 +5,4 @@ accelerate
 datasets
 protobuf
 sentencepiece
+matplolib
