@@ -13,6 +13,7 @@ from time import sleep
 def set_seed(seed):
     np.random.seed(seed)
     torch.random.manual_seed(seed)
+    torch.manual_seed(seed)
     
 def get_llm(model_name):
     if 'llama' in model_name.lower():
@@ -53,16 +54,18 @@ def main():
     # seed = 0
     # model_name = 'baffo32/decapoda-research-llama-7B-hf'
     # token_gen_size = 100
-    promt = "There are various way to compress LLM model, this can be done by reducing the number of parameters or by using the decompression scheme called 'Pulse' which is the equivalent of the first generation techniques, so its very important to minimize the number of parameters of LLM model. However, since LLM model can only compress LLM model's LLM model to the output, it is not possible"      
+    promt = "There are various way to compress LLM model, this can be done by reducing the number of parameters or by using the decompression scheme called 'Pulse' which is the equivalent of the first generation techniques, so its very important to minimize the number of parameters of LLM model. However, since LLM model can only compress LLM model's LLM model to the output, it is not possible to extract the input for LLM model. In the second type of compressed model, the input is compressed first, and then the target output is"      
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, required=True, help='Model used for inference')
     parser.add_argument('--seed', type=int, default=0,help='Sets seed fot repeatability')
-    parser.add_argument('--token_size', type=int, default=200, help='Maximum generated tokens')
-    parser.add_argument('--log', type=int, default=1,help='Log the performance on csv file')
+    parser.add_argument('--token_size', type=int, default=300, help='Maximum generated tokens')
+    parser.add_argument('--log', type=int, default=1, help='Log the performance on csv file')
+    parser.add_argument('--loop', type=int, default=30, help='n times inference loop')
     args = parser.parse_args()
     
     if args.log:
+        print(f'PID\t{os.getpid()}')
         log_pid = int(input('Input logger PID: '))
     else:
         pass
@@ -80,78 +83,104 @@ def main():
     tokenizer = get_tokenizer(args.model)
     
     print(f'model used\t{args.model}')
-    print(f'device used\t{device}')   
+    print(f'device used\t{device}')
+    
+    tgt_list = []
+    tpot_list = []
+    tps_list = []
+    ttft_list = []
+    gen_list = []   
      
+    for i in range(args.loop):
+        print(f'Loop {i}')
+        print('\n-----TGT & TPOT-----')
+        #TGT & TPOT    
+        tgt_time = datetime.now()
+        model_inputs = tokenizer(promt, return_tensors='pt').to(device)
+        
+        tpot_time = datetime.now()
+        generate_ids = generate_text(
+            model=model,
+            model_inputs=model_inputs,
+            num_gen_token=args.token_size,
+            do_sample=True
+        )
+        tpot_end_time = datetime.now()
+        
+        text = tokenizer.batch_decode(generate_ids, skip_special_tokens=True)[0]
+        tgt_end_time = datetime.now()
+        
+        
+        print('\n-----TTFT-----')
+        #TTFT
+        ttft_time = datetime.now()
+        _ = generate_text(
+            model=model,
+            model_inputs=model_inputs,
+            num_gen_token=1,
+            do_sample=False
+        )
+        ttft_end_time = datetime.now()
+        
+        inputs_token_len = model_inputs.input_ids.size(dim=1) 
+        gen_token_len = generate_ids.size(dim=1)
+        
+        # print(model_inputs)
+        # print(generate_ids)
+        
+        print('\n-----Text Output----')
+        print(f'\n{text}\n')
+        
+        tpot_delta  = round(((tpot_end_time - tpot_time).seconds * 1000) + ((tpot_end_time - tpot_time).microseconds / 1000))
+        ttft_delta  = round(((ttft_end_time - ttft_time).seconds * 1000) + ((ttft_end_time - ttft_time).microseconds / 1000))
+        tgt_delta   = round(((tgt_end_time - tgt_time).seconds * 1000) + ((tgt_end_time - tgt_time).microseconds / 1000))
+        
+        model_delta = round(((model_end - model_start).seconds * 1000) + ((model_end - model_start).microseconds / 1000))
+        
+        tpot = round(tpot_delta/(gen_token_len-inputs_token_len), 3)
+        tps = round((gen_token_len-inputs_token_len)/tpot_delta*1000, 3)
+        
+        tgt_list.append(tgt_delta)
+        tpot_list.append(tpot)
+        tps_list.append(tps)
+        ttft_list.append(ttft_delta)
+        gen_list.append(gen_token_len-inputs_token_len)
+        
+        print('\n-----Latency Result----')
+        print(f'Input token length\t{inputs_token_len}')
+        print(f'Totalngth\t{gen_token_len}')
+        print(f'Token Generated\t{gen_token_len-inputs_token_len} tokens')
     
-    print('\n-----TGT & TPOT-----')
-    #TGT & TPOT    
-    tgt_time = datetime.now()
-    model_inputs = tokenizer(promt, return_tensors='pt').to(device)
+    avg_tgt = sum(tgt_list) / len(tgt_list)
+    avg_tpot = sum(tpot_list) / len(tpot_list)
+    avg_tps = sum(tps_list) / len(tps_list)
+    avg_ttft = sum(ttft_list) / len(ttft_list)
+    avg_gen = sum(gen_list) / len(gen_list)
     
-    tpot_time = datetime.now()
-    generate_ids = generate_text(
-        model=model,
-        model_inputs=model_inputs,
-        num_gen_token=args.token_size,
-        do_sample=True
-    )
-    tpot_end_time = datetime.now()
-    
-    text = tokenizer.batch_decode(generate_ids, skip_special_tokens=True)[0]
-    tgt_end_time = datetime.now()
-    
-    
-    print('\n-----TTFT-----')
-    #TTFT
-    ttft_time = datetime.now()
-    _ = generate_text(
-        model=model,
-        model_inputs=model_inputs,
-        num_gen_token=1,
-        do_sample=False
-    )
-    ttft_end_time = datetime.now()
-    
-    inputs_token_len = model_inputs.input_ids.size(dim=1) 
-    gen_token_len = generate_ids.size(dim=1)
-    
-    # print(model_inputs)
-    # print(generate_ids)
-    
-    print('\n-----Text Output----')
-    print(f'\n{text}\n')
-    
-    tpot_delta  = round(((tpot_end_time - tpot_time).seconds * 1000) + ((tpot_end_time - tpot_time).microseconds / 1000))
-    ttft_delta  = round(((ttft_end_time - ttft_time).seconds * 1000) + ((ttft_end_time - ttft_time).microseconds / 1000))
-    tgt_delta   = round(((tgt_end_time - tgt_time).seconds * 1000) + ((tgt_end_time - tgt_time).microseconds / 1000))
-    
-    model_delta = round(((model_end - model_start).seconds * 1000) + ((model_end - model_start).microseconds / 1000))
-    
-    tpot = round(tpot_delta/(gen_token_len-inputs_token_len), 3)
-    tps = round((gen_token_len-inputs_token_len)/tpot_delta*1000, 3)
-    
-    print('\n-----Latency Result----')
+    print('\n-----End Latency Result----')
     print(f'Input token length\t{inputs_token_len}')
     print(f'Totalngth\t{gen_token_len}')
-    print(f'Token Generated\t{gen_token_len-inputs_token_len} tokens')
+    print(f'avg Token Generated\t{avg_gen} tokens')
     print(f'Model load time\t{model_delta} ms')
+    print(f'Loops {args.loop}')
     
     print()
     
-    print(f'TGT\t-> {tgt_delta} ms')
-    print(f'aTPOT\t-> {tpot} ms/tok | {gen_token_len-inputs_token_len} tokens')
-    print(f'TpS\t-> {tps} tok/s | {gen_token_len-inputs_token_len} tokens')
-    print(f'TTFT\t-> {ttft_delta} ms')
+    print(f'avg TGT \t-> {round(avg_tgt, 2)} ms')
+    print(f'avg TPOT\t-> {round(avg_tpot, 2)} ms/tok')
+    print(f'avg TpS \t-> {round(avg_tps, 2)} tok/s')
+    print(f'avg TTFT\t-> {round(avg_ttft, 2)} ms')
     
     print()
     
+    print('Times (for referance purpose)')
     print(f'Code start time\t {model_start}')
     print(f'TGT start time\t {tgt_time}')
     print(f'TPOT start time\t {tpot_time}')
     print(f'TTFT star time\t {ttft_time}')
     
     if args.log:
-        sleep(30) # Buffer     
+        sleep(20) # Buffer     
         
         try:
             os.kill(log_pid, signal.SIGTERM)
