@@ -24,7 +24,7 @@ def get_data(interval, pid):
     
     time = datetime.now()
     
-    cpu_percent = pu.cpu_percent(interval)
+    cpu_percent = p.cpu_percent(interval)
     # cpu_freq = round(pu.cpu_freq().current, 3)
     
     # mem = pu.virtual_memory()
