@@ -67,12 +67,12 @@ def get_data(interval, pid):
     
     return stats
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description='Simple logger')
 
     parser.add_argument('--file', action="store", dest="file", default="log.csv")
     parser.add_argument('--interval', type=float, default=1)
-    parser.add_argument('--pid', type=int)
+    parser.add_argument('--pid', type=int, default=None)
     args = parser.parse_args()
 
     save_path = './logger/'
@@ -81,30 +81,25 @@ if __name__ == "__main__":
     print("Simple jtop logger")
     print(f"Saving log on {save_file}")
     print(f'Process PID {os.getpid()}')
-    
-    pid = args.pid
 
     if not os.path.exists(save_path):
         os.makedirs(save_path, exist_ok=True)
 
-    try:
-        with open(save_file, 'w') as csvfile:
-            stats = get_data(args.interval, pid)
-            
-            writer = csv.DictWriter(csvfile, fieldnames=stats.keys())
-            writer.writeheader()
+    with open(save_file, 'w') as csvfile:
+        stats = get_data(args.interval, args.pid)
+        
+        writer = csv.DictWriter(csvfile, fieldnames=stats.keys())
+        writer.writeheader()
+        writer.writerow(stats)
+        
+        print('Logging...')
+        
+        while True:
+            stats = get_data(args.interval, args.pid)
             writer.writerow(stats)
-            
-            print('Logging...')
-            
-            while True:
-                stats = get_data(args.interval, pid)
-                writer.writerow(stats)
-                #print("Log at {time}".format(time=stats['time']))
-    except Exception as e:
-        print(e)
-    except KeyboardInterrupt:
-        print("Closed with CTRL-C")
-    except IOError:
-        print("I/O error")
+            #print("Log at {time}".format(time=stats['time']))
+            csvfile.flush()
+
+if __name__ == "__main__":
+    main()
 
