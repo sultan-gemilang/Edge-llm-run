@@ -12,3 +12,6 @@ offload
 # Log
 logger
 log
+
+#Model Folder
+saved_models
