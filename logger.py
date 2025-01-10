@@ -24,7 +24,7 @@ def get_data(interval, pid):
     
     time = datetime.now()
     
-    cpu_percent = p.cpu_percent(interval)
+    cpu_percent = pu.cpu_percent(interval)
     # cpu_freq = round(pu.cpu_freq().current, 3)
     
     # mem = pu.virtual_memory()
@@ -77,13 +77,13 @@ def main():
 
     save_path = './logger/'
     save_file = os.path.join(save_path, args.file)
+    
+    if not os.path.exists(save_path):
+        os.makedirs(save_path, exist_ok=True)
 
     print("Simple jtop logger")
     print(f"Saving log on {save_file}")
     print(f'Process PID {os.getpid()}')
-
-    if not os.path.exists(save_path):
-        os.makedirs(save_path, exist_ok=True)
 
     with open(save_file, 'w') as csvfile:
         stats = get_data(args.interval, args.pid)
