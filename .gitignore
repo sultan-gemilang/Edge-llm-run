@@ -15,3 +15,6 @@ log
 
 #Model Folder
 saved_models
+
+#Test Folder
+test
