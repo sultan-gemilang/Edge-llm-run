@@ -54,7 +54,7 @@ def main():
     # seed = 0
     # model_name = 'baffo32/decapoda-research-llama-7B-hf'
     # token_gen_size = 100
-    promt = "There are various way to compress LLM model, this can be done by reducing the number of parameters or by using the decompression scheme called 'Pulse' which is the equivalent of the first generation techniques, so its very important to minimize the number of parameters of LLM model. However, since LLM model can only compress LLM model's LLM model to the output, it is not possible to extract the input for LLM model. In the second type of compressed model, the input is compressed first, and then the target output is"      
+    promt = "Two plus two is"      
     
     parser = argparse.ArgumentParser()
     parser.add_argument('--model', type=str, default='baffo32/decapoda-research-llama-7B-hf', required=True, help='Model used for inference')
